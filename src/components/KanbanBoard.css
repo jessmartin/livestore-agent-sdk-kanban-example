@@ -20,7 +20,7 @@
 
 .kanban-column {
   flex: 1;
-  min-width: 200px;
+  min-width: 300px;
   background: #f8f9fa;
   border-radius: 12px;
   padding: 1rem;
