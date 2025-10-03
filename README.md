@@ -1,73 +1,82 @@
-# React + TypeScript + Vite
+# 🎯 LiveStore Kanban Board
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A blazingly fast Kanban board powered by **event sourcing** and **SQLite**—running entirely in your browser.
 
-Currently, two official plugins are available:
+## ✨ What Makes This Cool
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Event-Sourced**: Every change is an immutable event, giving you a complete audit trail
+- **Offline-First**: Powered by LiveStore with OPFS storage—works without a backend
+- **Real-Time**: Changes materialize instantly through SQLite queries
+- **Type-Safe**: Full TypeScript coverage from events to UI
+- **Web Worker Magic**: LiveStore runs in a worker for buttery-smooth performance
 
-## React Compiler
+## 🚀 Quick Start
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Visit **http://localhost:60000** and start organizing.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Check out the **LiveStore DevTools** at **http://localhost:60000/_livestore** to see events flowing in real-time.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🏗️ Architecture
+
 ```
+src/
+├── livestore/
+│   └── schema.ts           # Event schema & table definitions
+├── livestore.worker.ts     # LiveStore runtime (runs in Web Worker)
+├── components/
+│   ├── KanbanBoard.tsx     # Board orchestration + drag/drop
+│   ├── KanbanColumn.tsx    # Column rendering
+│   └── TaskCard.tsx        # Individual task UI
+└── App.tsx                 # LiveStore provider setup
+```
+
+## 🎪 Features
+
+- **Drag & Drop**: Smooth, accessible DnD powered by @dnd-kit
+- **Full CRUD**: Create, read, update, and delete tasks with ease
+- **Three Columns**: To Do → In Progress → Done
+- **Instant Persistence**: All changes saved to browser OPFS automatically
+- **Zero Backend**: Everything runs client-side
+
+## 🧠 How It Works
+
+1. **User Action** → Trigger an event (`taskCreated`, `taskMoved`, etc.)
+2. **Event Logged** → Immutable event stored in LiveStore
+3. **Materialization** → SQLite tables automatically updated
+4. **React Subscribes** → Components re-render with fresh data
+5. **Persist** → OPFS saves everything locally
+
+### Event Types
+
+| Event | Purpose |
+|-------|---------|
+| `taskCreated` | Add a new task with title, description, column, position |
+| `taskMoved` | Reposition task within or across columns |
+| `taskUpdated` | Edit title or description |
+| `taskDeleted` | Remove task from board |
+
+## 🛠️ Tech Stack
+
+- **LiveStore** - Event-sourced reactive state management
+- **React** - UI rendering
+- **TypeScript** - Type safety
+- **Vite** - Lightning-fast dev & build
+- **@dnd-kit** - Modern drag and drop
+- **pnpm** - Efficient package management
+
+## 📦 Build
+
+```bash
+pnpm build
+```
+
+Output lands in `dist/` ready for deployment.
+
+---
+
+**Built with [LiveStore](https://livestore.dev)** | The event-sourced database for local-first apps
