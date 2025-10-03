@@ -7,6 +7,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { events, tables } from '../livestore/schema'
 import KanbanColumn from './KanbanColumn'
 import TaskCard from './TaskCard'
+import Chat from './Chat'
 import './KanbanBoard.css'
 
 const columns = ['todo', 'doing', 'done'] as const
@@ -142,39 +143,47 @@ export default function KanbanBoard() {
   }
 
   return (
-    <div className="kanban-container">
-      <h1>Kanban Board</h1>
-      
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="kanban-board">
-          {columns.map(column => (
-            <KanbanColumn
-              key={column}
-              id={column}
-              title={columnTitles[column]}
-              tasks={tasksByColumnMap[column]}
-              onAddTask={() => setNewTaskColumn(column)}
-              onDeleteTask={handleDeleteTask}
-              onUpdateTask={handleUpdateTask}
-            />
-          ))}
-        </div>
+    <div className="kanban-app">
+      <div className="kanban-container">
+        <h1>Kanban Board</h1>
+        
+        <div className="kanban-main">
+          <Chat />
 
-        <DragOverlay>
-          {activeTask ? (
-            <TaskCard
-              task={activeTask}
-              isDragging
-              onDelete={() => {}}
-              onUpdate={() => {}}
-            />
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          <div className="kanban-board-wrapper">
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="kanban-board">
+                {columns.map(column => (
+                  <KanbanColumn
+                    key={column}
+                    id={column}
+                    title={columnTitles[column]}
+                    tasks={tasksByColumnMap[column]}
+                    onAddTask={() => setNewTaskColumn(column)}
+                    onDeleteTask={handleDeleteTask}
+                    onUpdateTask={handleUpdateTask}
+                  />
+                ))}
+              </div>
+
+              <DragOverlay>
+                {activeTask ? (
+                  <TaskCard
+                    task={activeTask}
+                    isDragging
+                    onDelete={() => {}}
+                    onUpdate={() => {}}
+                  />
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          </div>
+        </div>
+      </div>
 
       {newTaskColumn && (
         <div className="modal-overlay" onClick={() => setNewTaskColumn(null)}>

@@ -13,6 +13,15 @@ export const tables = {
       updatedAt: State.SQLite.integer({ schema: Schema.DateFromNumber }),
     },
   }),
+  chatMessages: State.SQLite.table({
+    name: 'chatMessages',
+    columns: {
+      id: State.SQLite.text({ primaryKey: true }),
+      content: State.SQLite.text({ default: '' }),
+      role: State.SQLite.text({ default: 'user' }),
+      createdAt: State.SQLite.integer({ schema: Schema.DateFromNumber }),
+    },
+  }),
 }
 
 export const events = {
@@ -49,6 +58,15 @@ export const events = {
     name: 'v1.TaskDeleted',
     schema: Schema.Struct({ id: Schema.String }),
   }),
+  chatMessageSent: Events.synced({
+    name: 'v1.ChatMessageSent',
+    schema: Schema.Struct({
+      id: Schema.String,
+      content: Schema.String,
+      role: Schema.Literal('user', 'assistant'),
+      createdAt: Schema.Date,
+    }),
+  }),
 }
 
 const materializers = State.SQLite.materializers(events, {
@@ -64,6 +82,8 @@ const materializers = State.SQLite.materializers(events, {
   },
   'v1.TaskDeleted': ({ id }) => 
     tables.tasks.delete().where({ id }),
+  'v1.ChatMessageSent': ({ id, content, role, createdAt }) =>
+    tables.chatMessages.insert({ id, content, role, createdAt }),
 })
 
 const state = State.SQLite.makeState({ tables, materializers })
