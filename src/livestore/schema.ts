@@ -98,7 +98,7 @@ const materializers = State.SQLite.materializers(events, {
   'v1.ChatMessageSent': ({ id, content, role, createdAt }) =>
     tables.chatMessages.insert({ id, content, role, createdAt }),
   'v1.ChatSessionUpdated': ({ sessionId }) =>
-    tables.chatSession.insert({ id: 'current', sessionId }).onConflict('id').doUpdate({ sessionId }),
+    tables.chatSession.insert({ id: 'current', sessionId }).onConflict('id', 'replace'),
 })
 
 const state = State.SQLite.makeState({ tables, materializers })

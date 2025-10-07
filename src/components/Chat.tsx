@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { queryDb } from '@livestore/livestore'
 import { useStore } from '@livestore/react'
 import { events, tables } from '../livestore/schema'
 import { query } from '@anthropic-ai/claude-agent-sdk'
-import type { SDKMessage } from '@anthropic-ai/claude-agent-sdk'
+import { createLiveStoreMcpServer } from '../mcp/livestore-server'
 import './Chat.css'
 
 const chatMessages$ = queryDb(
@@ -25,6 +25,9 @@ export default function Chat() {
   const messages = store.useQuery(chatMessages$)
   const sessionData = store.useQuery(chatSession$)
   const currentSessionId = sessionData[0]?.sessionId
+
+  // Create MCP server with LiveStore tools
+  const mcpServer = useMemo(() => createLiveStoreMcpServer(store), [store])
 
   useEffect(() => {
     scrollToBottom()
@@ -53,14 +56,21 @@ export default function Chat() {
     setIsLoading(true)
 
     try {
-      // Call Claude Agent SDK
+      // Set API key in environment for Claude Agent SDK
+      if (import.meta.env.VITE_ANTHROPIC_KEY) {
+        (globalThis as any).ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_KEY
+      }
+
+      // Call Claude Agent SDK with LiveStore MCP server
       const result = query({
         prompt: userMessage,
         options: {
           continue: !!currentSessionId,
           allowedTools: ['WebSearch', 'WebFetch'],
-          apiKey: import.meta.env.VITE_ANTHROPIC_KEY,
-        }
+          mcpServers: {
+            LiveStore: mcpServer,
+          },
+        },
       })
 
       let newSessionId: string | null = null
@@ -80,13 +90,22 @@ export default function Chat() {
           for (const block of content) {
             if (block.type === 'tool_use') {
               const toolName = block.name
-              const toolInput = JSON.stringify(block.input, null, 2)
 
               let toolMessage = ''
               if (toolName === 'WebSearch') {
                 toolMessage = `🔍 Searching the web for: "${block.input.query}"`
               } else if (toolName === 'WebFetch') {
                 toolMessage = `🌐 Fetching: ${block.input.url}`
+              } else if (toolName === 'createTask') {
+                toolMessage = `📝 Creating task: "${block.input.title}"`
+              } else if (toolName === 'listTasks') {
+                toolMessage = `📋 Listing tasks${block.input.column ? ` in ${block.input.column}` : ''}`
+              } else if (toolName === 'moveTask') {
+                toolMessage = `↔️ Moving task to ${block.input.column}`
+              } else if (toolName === 'updateTask') {
+                toolMessage = `✏️ Updating task`
+              } else if (toolName === 'deleteTask') {
+                toolMessage = `🗑️ Deleting task`
               } else {
                 toolMessage = `🔧 Using tool: ${toolName}`
               }
