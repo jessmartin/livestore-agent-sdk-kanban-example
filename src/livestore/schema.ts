@@ -22,6 +22,13 @@ export const tables = {
       createdAt: State.SQLite.integer({ schema: Schema.DateFromNumber }),
     },
   }),
+  chatSession: State.SQLite.table({
+    name: 'chatSession',
+    columns: {
+      id: State.SQLite.text({ primaryKey: true }), // Always 'current'
+      sessionId: State.SQLite.text({ default: '' }),
+    },
+  }),
 }
 
 export const events = {
@@ -67,6 +74,12 @@ export const events = {
       createdAt: Schema.Date,
     }),
   }),
+  chatSessionUpdated: Events.synced({
+    name: 'v1.ChatSessionUpdated',
+    schema: Schema.Struct({
+      sessionId: Schema.String,
+    }),
+  }),
 }
 
 const materializers = State.SQLite.materializers(events, {
@@ -84,6 +97,8 @@ const materializers = State.SQLite.materializers(events, {
     tables.tasks.delete().where({ id }),
   'v1.ChatMessageSent': ({ id, content, role, createdAt }) =>
     tables.chatMessages.insert({ id, content, role, createdAt }),
+  'v1.ChatSessionUpdated': ({ sessionId }) =>
+    tables.chatSession.insert({ id: 'current', sessionId }).onConflict('id').doUpdate({ sessionId }),
 })
 
 const state = State.SQLite.makeState({ tables, materializers })

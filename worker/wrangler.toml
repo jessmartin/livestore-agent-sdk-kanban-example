@@ -1,0 +1,11 @@
+name = "kanban-sync-worker"
+main = "src/index.ts"
+compatibility_date = "2025-01-15"
+
+[[durable_objects.bindings]]
+name = "SYNC"
+class_name = "SyncDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["SyncDurableObject"]

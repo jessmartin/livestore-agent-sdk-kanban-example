@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react'
 import { queryDb } from '@livestore/livestore'
 import { useStore } from '@livestore/react'
 import { events, tables } from '../livestore/schema'
+import { query } from '@anthropic-ai/claude-agent-sdk'
+import type { SDKMessage } from '@anthropic-ai/claude-agent-sdk'
 import './Chat.css'
 
 const chatMessages$ = queryDb(
@@ -9,13 +11,20 @@ const chatMessages$ = queryDb(
   { label: 'chat-messages' }
 )
 
+const chatSession$ = queryDb(
+  tables.chatSession.where({ id: 'current' }),
+  { label: 'chat-session' }
+)
+
 export default function Chat() {
   const { store } = useStore()
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
+
   const messages = store.useQuery(chatMessages$)
+  const sessionData = store.useQuery(chatSession$)
+  const currentSessionId = sessionData[0]?.sessionId
 
   useEffect(() => {
     scrollToBottom()
@@ -30,8 +39,8 @@ export default function Chat() {
 
     const userMessage = inputValue.trim()
     setInputValue('')
-    
-    // Send user message
+
+    // Send user message to LiveStore
     store.commit(
       events.chatMessageSent({
         id: crypto.randomUUID(),
@@ -41,24 +50,91 @@ export default function Chat() {
       })
     )
 
-    // Simulate AI response (you can replace this with actual AI integration)
     setIsLoading(true)
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      const aiResponse = `I see you said: "${userMessage}". How can I help you with the kanban board?`
-      
+
+    try {
+      // Call Claude Agent SDK
+      const result = query({
+        prompt: userMessage,
+        options: {
+          continue: !!currentSessionId,
+          allowedTools: ['WebSearch', 'WebFetch'],
+          apiKey: import.meta.env.VITE_ANTHROPIC_KEY,
+        }
+      })
+
+      let newSessionId: string | null = null
+
+      // Process messages from the SDK
+      for await (const message of result) {
+        // Store session ID from any message
+        if (message.session_id && !newSessionId) {
+          newSessionId = message.session_id
+        }
+
+        // Handle assistant messages
+        if (message.type === 'assistant') {
+          const content = message.message.content
+
+          // Look for tool uses and show them
+          for (const block of content) {
+            if (block.type === 'tool_use') {
+              const toolName = block.name
+              const toolInput = JSON.stringify(block.input, null, 2)
+
+              let toolMessage = ''
+              if (toolName === 'WebSearch') {
+                toolMessage = `🔍 Searching the web for: "${block.input.query}"`
+              } else if (toolName === 'WebFetch') {
+                toolMessage = `🌐 Fetching: ${block.input.url}`
+              } else {
+                toolMessage = `🔧 Using tool: ${toolName}`
+              }
+
+              store.commit(
+                events.chatMessageSent({
+                  id: crypto.randomUUID(),
+                  content: toolMessage,
+                  role: 'assistant',
+                  createdAt: new Date(),
+                })
+              )
+            } else if (block.type === 'text' && block.text.trim()) {
+              // Show assistant text response
+              store.commit(
+                events.chatMessageSent({
+                  id: crypto.randomUUID(),
+                  content: block.text,
+                  role: 'assistant',
+                  createdAt: new Date(),
+                })
+              )
+            }
+          }
+        }
+      }
+
+      // Store the session ID if we got a new one
+      if (newSessionId && newSessionId !== currentSessionId) {
+        store.commit(
+          events.chatSessionUpdated({
+            sessionId: newSessionId,
+          })
+        )
+      }
+    } catch (error) {
+      console.error('Error calling Claude SDK:', error)
       store.commit(
         events.chatMessageSent({
           id: crypto.randomUUID(),
-          content: aiResponse,
+          content: `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
           role: 'assistant',
           createdAt: new Date(),
         })
       )
-      
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
