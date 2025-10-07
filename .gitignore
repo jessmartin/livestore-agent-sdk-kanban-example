@@ -27,3 +27,9 @@ dist-ssr
 # Wrangler (Cloudflare Workers)
 **/worker/.wrangler/
 packages/worker/.wrangler/
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
