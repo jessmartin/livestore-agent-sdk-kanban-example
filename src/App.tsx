@@ -13,14 +13,22 @@ const adapter = makePersistedAdapter({
   sharedWorker: LiveStoreSharedWorker,
 })
 
+// Get sessionId from URL query parameter
+const getSessionIdFromUrl = (): string => {
+  const params = new URLSearchParams(window.location.search)
+  return params.get('sessionId') || 'kanban-board-store'
+}
+
 function App() {
+  const storeId = getSessionIdFromUrl()
+
   return (
     <LiveStoreProvider
       schema={schema}
       adapter={adapter}
       renderLoading={(_) => <div className="loading">Loading LiveStore ({_.stage})...</div>}
       batchUpdates={batchUpdates}
-      storeId="kanban-board-store"
+      storeId={storeId}
     >
       <KanbanBoard />
     </LiveStoreProvider>
