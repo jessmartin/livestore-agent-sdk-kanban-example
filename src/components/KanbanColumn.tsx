@@ -3,17 +3,17 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import TaskCard from './TaskCard'
 
 interface Task {
-  id: string
-  title: string
-  description: string
-  column: string
-  position: number
+  readonly id: string
+  readonly title: string
+  readonly description: string
+  readonly column: string
+  readonly position: number
 }
 
 interface KanbanColumnProps {
   id: string
   title: string
-  tasks: Task[]
+  tasks: readonly Task[]
   onAddTask: () => void
   onDeleteTask: (taskId: string) => void
   onUpdateTask: (taskId: string, title: string, description: string) => void
