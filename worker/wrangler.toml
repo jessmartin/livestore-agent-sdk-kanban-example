@@ -2,10 +2,20 @@ name = "kanban-sync-worker"
 main = "src/index.ts"
 compatibility_date = "2025-01-15"
 
+[dev]
+port = 8787
+
+# Durable Object for WebSocket connections with built-in SQLite
 [[durable_objects.bindings]]
-name = "SYNC"
-class_name = "SyncDurableObject"
+name = "WEBSOCKET_SERVER"
+class_name = "SyncBackendDO"
+
+# D1 database for eventlog storage
+[[d1_databases]]
+binding = "DB"
+database_name = "kanban-sync-db"
+database_id = "local-db"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["SyncDurableObject"]
+new_sqlite_classes = ["SyncBackendDO"]
