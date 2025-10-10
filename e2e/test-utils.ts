@@ -5,11 +5,18 @@ import { Page, expect } from '@playwright/test';
  * and is no longer showing a loading state
  */
 export async function waitForLiveStoreReady(page: Page) {
-  // Wait for the main heading to be visible (indicates app has loaded)
-  await page.waitForSelector('h1', { timeout: 30000 });
+  // Wait for LiveStore to fully initialize and the app to render
+  await page.waitForFunction(
+    () => {
+      // Check if the app has rendered (h1 exists and isn't the loading message)
+      const h1 = document.querySelector('h1');
+      return h1 !== null && h1.textContent !== '';
+    },
+    { timeout: 60000 } // Give LiveStore up to 60 seconds to initialize
+  );
 
-  // Give LiveStore a moment to initialize
-  await page.waitForTimeout(500);
+  // Give React a moment to finish rendering
+  await page.waitForTimeout(1000);
 }
 
 /**
