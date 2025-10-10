@@ -6,7 +6,14 @@
   "scripts": {
     "dev": "concurrently -n worker,server,web -c blue,yellow,green \"pnpm --filter @kanban/worker dev\" \"pnpm --filter @kanban/server dev\" \"pnpm --filter @kanban/web dev\"",
     "build": "pnpm --filter @kanban/worker build && pnpm --filter @kanban/server build && pnpm --filter @kanban/web build",
-    "lint": "pnpm --filter @kanban/web lint"
+    "lint": "pnpm --filter @kanban/web lint",
+    "test": "pnpm --filter @kanban/web test",
+    "test:ui": "pnpm --filter @kanban/web test:ui",
+    "test:coverage": "pnpm --filter @kanban/web test:coverage",
+    "test:e2e": "pnpm --filter @kanban/web test:e2e",
+    "test:e2e:ui": "pnpm --filter @kanban/web test:e2e:ui",
+    "test:e2e:debug": "pnpm --filter @kanban/web test:e2e:debug",
+    "test:all": "pnpm --filter @kanban/web test:all"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

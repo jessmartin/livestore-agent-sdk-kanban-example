@@ -10,6 +10,10 @@ export default defineConfig({
   })],
   server: {
     port: 60000,
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
   },
   optimizeDeps: {
     exclude: ['@livestore/wa-sqlite'],

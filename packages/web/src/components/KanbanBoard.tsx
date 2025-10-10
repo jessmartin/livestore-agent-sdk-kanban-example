@@ -171,7 +171,7 @@ export default function KanbanBoard() {
                     key={column}
                     id={column}
                     title={columnTitles[column]}
-                    tasks={tasksByColumnMap[column]}
+                    tasks={[...tasksByColumnMap[column]]}
                     onAddTask={() => setNewTaskColumn(column)}
                     onDeleteTask={handleDeleteTask}
                     onUpdateTask={handleUpdateTask}

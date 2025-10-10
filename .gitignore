@@ -30,3 +30,9 @@ packages/worker/.wrangler/
 
 # LiveStore database directories
 packages/server/kanban-board-store/
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
