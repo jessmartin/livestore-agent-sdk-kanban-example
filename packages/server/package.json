@@ -1,0 +1,24 @@
+{
+  "name": "@kanban/server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node ./scripts/run-esbuild.mjs index.ts --bundle --platform=node --format=esm --outdir=dist --sourcemap --external:@livestore/* --external:@anthropic-ai/*",
+    "start": "node dist/index.js",
+    "dev": "pnpm run build && pnpm run start"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.9",
+    "@livestore/common": "0.4.0-dev.9",
+    "@livestore/livestore": "0.4.0-dev.9",
+    "@livestore/sqlite-wasm": "0.4.0-dev.9",
+    "@livestore/sync-cf": "0.4.0-dev.9",
+    "@livestore/utils": "0.4.0-dev.9"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "esbuild": "^0.24.2",
+    "typescript": "~5.9.3"
+  }
+}

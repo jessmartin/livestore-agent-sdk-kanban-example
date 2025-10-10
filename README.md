@@ -21,6 +21,26 @@ Visit **http://localhost:60000** and start organizing.
 
 Check out the **LiveStore DevTools** at **http://localhost:60000/_livestore** to see events flowing in real-time.
 
+### LiveStore Agent Server
+
+The chat assistant now runs on a companion Node server that syncs with the LiveStore backend.
+
+```bash
+# 1. Export your Claude API key
+export ANTHROPIC_API_KEY=...
+
+# 2. Build the server bundle
+pnpm run server:build
+
+# 3. Start the agent server (connects to ws://localhost:8787 by default)
+pnpm run server:start
+
+# Or run both steps together
+pnpm run server:dev
+```
+
+You can customise the sync endpoint or store by setting `LIVESTORE_SYNC_URL` and `LIVESTORE_STORE_ID` before starting the server. Tool usage and Claude responses are emitted back into the chat timeline as LiveStore events.
+
 ## 🏗️ Architecture
 
 ```
