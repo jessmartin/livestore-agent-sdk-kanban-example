@@ -27,3 +27,6 @@ dist-ssr
 # Wrangler (Cloudflare Workers)
 **/worker/.wrangler/
 packages/worker/.wrangler/
+
+# LiveStore database directories
+packages/server/kanban-board-store/
