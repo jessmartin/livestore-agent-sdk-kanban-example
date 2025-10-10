@@ -1,9 +1,8 @@
 import { query, type SDKAssistantMessage, type SDKMessage } from '@anthropic-ai/claude-agent-sdk'
+import { makeAdapter } from '@livestore/adapter-node'
 import { createStorePromise, queryDb } from '@livestore/livestore'
 import { makeWsSync } from '@livestore/sync-cf/client'
-import { Effect } from '@livestore/utils/effect'
-import { events, schema, tables } from '../web/src/livestore/schema'
-import { makeNodeAdapter } from './node-adapter'
+import { events, schema, tables } from './livestore/schema.js'
 
 type ChatMessageRow = {
   id: string
@@ -25,25 +24,25 @@ if (!anthropicKey) {
 const syncUrl = process.env.LIVESTORE_SYNC_URL ?? 'ws://localhost:8787'
 const storeId = process.env.LIVESTORE_STORE_ID ?? 'kanban-board-store'
 
-const adapter = makeNodeAdapter({
-  sync: {
-    backend: makeWsSync({ url: syncUrl }),
-    initialSyncOptions: { _tag: 'Blocking', timeout: 5000 },
-    livePull: true,
-  },
-})
-
 async function main() {
+  const adapter = makeAdapter({
+    storage: { type: 'memory' },
+    sync: {
+      backend: makeWsSync({ url: syncUrl }),
+      onSyncError: 'log-and-continue'
+    },
+  })
+
   const store = await createStorePromise({
+    adapter,
     schema,
     storeId,
-    adapter,
     batchUpdates: (run) => run(),
     disableDevtools: true,
   })
 
   await store.boot
-  console.log('[Server] LiveStore agent server booted')
+  console.log('[Server] LiveStore agent server booted, connected to', syncUrl)
 
   const processedMessageIds = new Set<string>()
   let initialised = false
@@ -88,14 +87,10 @@ async function main() {
     },
   })
 
-  process.on('SIGINT', () => {
-    console.log('Shutting down LiveStore agent server...')
-    Effect.runPromise(store.shutdown())
-      .then(() => process.exit(0))
-      .catch((error) => {
-        console.error('Failed to shutdown cleanly', error)
-        process.exit(1)
-      })
+  process.on('SIGINT', async () => {
+    console.log('\nShutting down LiveStore agent server...')
+    await store.shutdown()
+    process.exit(0)
   })
 
   await new Promise(() => {})
@@ -112,7 +107,6 @@ async function handleUserMessage(store: Awaited<ReturnType<typeof createStorePro
     options: {
       continue: Boolean(currentSessionId),
       allowedTools: ['WebSearch', 'WebFetch'],
-      apiKey: anthropicKey,
     },
   })
 
