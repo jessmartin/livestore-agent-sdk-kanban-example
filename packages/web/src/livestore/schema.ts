@@ -88,7 +88,7 @@ const materializers = State.SQLite.materializers(events, {
   'v1.TaskMoved': ({ id, column, position, updatedAt }) => 
     tables.tasks.update({ column, position, updatedAt }).where({ id }),
   'v1.TaskUpdated': ({ id, title, description, updatedAt }) => {
-    const updates: any = { updatedAt }
+    const updates: { updatedAt: Date; title?: string; description?: string } = { updatedAt }
     if (title !== undefined) updates.title = title
     if (description !== undefined) updates.description = description
     return tables.tasks.update(updates).where({ id })
