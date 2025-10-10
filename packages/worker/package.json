@@ -1,5 +1,5 @@
 {
-  "name": "kanban-sync-worker",
+  "name": "@kanban/worker",
   "private": true,
   "version": "0.0.0",
   "type": "module",
