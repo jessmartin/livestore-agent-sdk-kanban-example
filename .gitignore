@@ -25,4 +25,5 @@ dist-ssr
 *.env
 
 # Wrangler (Cloudflare Workers)
-worker/.wrangler/
+**/worker/.wrangler/
+packages/worker/.wrangler/
