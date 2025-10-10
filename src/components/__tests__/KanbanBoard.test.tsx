@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import KanbanBoard from '../KanbanBoard';
 
 // Mock LiveStore schema module first
@@ -31,7 +30,7 @@ vi.mock('@livestore/react', () => ({
 }));
 
 vi.mock('@livestore/livestore', () => ({
-  queryDb: vi.fn((query, options) => query),
+  queryDb: vi.fn((query) => query),
   Events: {
     synced: vi.fn(),
   },
